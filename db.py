@@ -13,3 +13,7 @@ def get_db():
 
 
 db = LocalProxy(get_db)
+
+
+# def create_set(set_id, name, lang_1, lang_2):
+#     set_doc = {'set_id': set_id, 'name': name, 'lang_1': lang_1, 'lang_2': lang_2, }
