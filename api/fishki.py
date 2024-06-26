@@ -1,10 +1,27 @@
 from flask import Blueprint, request, jsonify
 from db import create_set, add_words, count_sets, set_exists, last_words_id, update_set, \
-    get_set, update_words, delete_set_by_id, delete_words_by_id, delete_all_words
+    get_set, get_all_sets, update_words, delete_set_by_id, delete_words_by_id, delete_all_words
 from api.utils import expect
 
 
 fishki_api_v1 = Blueprint('fishki_api_v1', 'fishki_api_v1', url_prefix='/api/v1/fishki')
+
+
+@fishki_api_v1.route('/get_set', methods=['GET'])
+def api_get_set():
+    body_data = request.get_json()
+    try:
+        set_id = expect(body_data.get('set_id'), int, 'set_id')
+        if not set_exists(set_id):
+            return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
+
+        res = get_set(set_id)
+        del res['_id']
+
+        return jsonify(res)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 
 @fishki_api_v1.route('/create_set', methods=['POST'])

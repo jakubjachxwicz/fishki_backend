@@ -19,7 +19,16 @@ def count_sets():
 
 
 def get_set(set_id):
-    return db.sets.find_one({'set_id': set_id})
+    try:
+        pipeline = [{"$match": {"set_id": set_id}}]
+        res = db.sets.aggregate(pipeline).next()
+        return res
+
+    except StopIteration as _:
+        return None
+
+    except Exception as e:
+        return {}
 
 
 def count_words_in_set(set_id):
@@ -38,6 +47,10 @@ def set_exists(set_id):
     if list(db.sets.find({'set_id': set_id})):
         return True
     return False
+
+
+def get_all_sets():
+    return db.sets_find()
 
 
 def create_set(set_id, name, lang_1, lang_2):
