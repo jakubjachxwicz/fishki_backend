@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from db import create_set, add_words, count_sets, set_exists, last_words_id, update_set, \
-    get_set, get_all_sets, update_words, delete_set_by_id, delete_words_by_id, delete_all_words
+    get_set, get_all_sets, update_words, delete_set_by_id, delete_words_by_id, delete_all_words, \
+    get_all_sets
 from api.utils import expect
 
 
@@ -22,6 +23,12 @@ def api_get_set():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+
+@fishki_api_v1.route('/get_all_sets', methods=['GET'])
+def api_get_all_sets():
+    result = get_all_sets()
+    return jsonify(result)
 
 
 @fishki_api_v1.route('/create_set', methods=['POST'])
