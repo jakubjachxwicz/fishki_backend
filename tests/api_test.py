@@ -19,6 +19,8 @@ BASE = 'http://127.0.0.1:5000/api/v1/fishki'
 
 # response = requests.delete(BASE + '/delete_all_words', json={'set_id': 1})
 
-response = requests.get(BASE + '/get_set', json={'set_id': 2})
+# response = requests.get(BASE + '/get_set', json={'set_id': 2})
+
+response = requests.get(BASE + '/get_all_sets')
 
 print(response.json())

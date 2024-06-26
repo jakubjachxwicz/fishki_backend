@@ -31,6 +31,20 @@ def get_set(set_id):
         return {}
 
 
+def get_all_sets():
+    result = []
+
+    cursor = db.sets.find({})
+    for document in cursor:
+        doc = document.copy()
+        del doc['_id']
+        doc['words_count'] = count_words_in_set(document['set_id'])
+        del doc['words']
+
+        result.append(doc)
+    return result
+
+
 def count_words_in_set(set_id):
     return len(db.sets.find({'set_id': set_id})[0]['words'])
 
@@ -49,8 +63,8 @@ def set_exists(set_id):
     return False
 
 
-def get_all_sets():
-    return db.sets_find()
+# def get_all_sets():
+#     return db.sets.find()
 
 
 def create_set(set_id, name, lang_1, lang_2):
