@@ -22,6 +22,7 @@ def get_set(set_id):
     try:
         pipeline = [{"$match": {"set_id": set_id}}]
         res = db.sets.aggregate(pipeline).next()
+        res['words_count'] = count_words_in_set(res['set_id'])
         return res
 
     except StopIteration as _:
