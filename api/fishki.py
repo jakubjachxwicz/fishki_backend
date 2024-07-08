@@ -1,18 +1,16 @@
 from flask import Blueprint, request, jsonify
 from db import create_set, add_words, count_sets, set_exists, last_words_id, update_set, \
-    get_set, get_all_sets, update_words, delete_set_by_id, delete_words_by_id, delete_all_words, \
+    get_set, update_words, delete_set_by_id, delete_words_by_id, delete_all_words, \
     get_all_sets
 from api.utils import expect
-
 
 fishki_api_v1 = Blueprint('fishki_api_v1', 'fishki_api_v1', url_prefix='/api/v1/fishki')
 
 
 @fishki_api_v1.route('/get_set', methods=['GET'])
 def api_get_set():
-    body_data = request.get_json()
     try:
-        set_id = expect(body_data.get('set_id'), int, 'set_id')
+        set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
 
@@ -20,6 +18,21 @@ def api_get_set():
         del res['_id']
 
         return jsonify(res)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@fishki_api_v1.route('/get_words', methods=['GET'])
+def api_get_words():
+    try:
+        set_id = expect(int(request.args.get('set_id')), int, 'set_id')
+        if not set_exists(set_id):
+            return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
+
+        res = get_set(set_id)
+
+        return jsonify(res['words'])
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
@@ -53,7 +66,7 @@ def api_create_set():
 def api_update_set():
     body_data = request.get_json()
     try:
-        set_id = expect(body_data.get('set_id'), int, 'set_id')
+        set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
         set_data = get_set(set_id)
@@ -82,9 +95,8 @@ def api_update_set():
 
 @fishki_api_v1.route('/delete_set', methods=['DELETE'])
 def api_delete_set():
-    body_data = request.get_json()
     try:
-        set_id = expect(body_data.get('set_id'), int, 'set_id')
+        set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
 
@@ -99,7 +111,7 @@ def api_delete_set():
 def api_add_words():
     post_data = request.get_json()
     try:
-        set_id = expect(post_data.get('set_id'), int, 'set_id')
+        set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
         w1 = expect(post_data.get('word_1'), str, 'word_1')
@@ -119,11 +131,11 @@ def api_add_words():
 def api_update_words():
     body_data = request.get_json()
     try:
-        set_id = expect(body_data.get('set_id'), int, 'set_id')
+        set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
 
-        words_id = expect(body_data.get('words_id'), int, 'words_id')
+        words_id = expect(int(request.args.get('words_id')), int, 'words_id')
         w1 = expect(body_data.get('word_1'), str, 'word_1')
         w2 = expect(body_data.get('word_2'), str, 'word_2')
 
@@ -138,10 +150,10 @@ def api_update_words():
 def api_delete_words():
     body_data = request.get_json()
     try:
-        set_id = expect(body_data.get('set_id'), int, 'set_id')
+        set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
-        words_id = expect(body_data.get('words_id'), int, 'words_id')
+        words_id = expect(int(request.args.get('words_id')), int, 'words_id')
 
         delete_words_by_id(set_id, words_id)
         return jsonify({'message': 'Words deleted...'})
