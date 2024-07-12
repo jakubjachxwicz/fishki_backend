@@ -55,7 +55,7 @@ def last_words_id(set_id):
     length = len(words)
     if length == 0:
         return 0
-    return words[length - 1][0]
+    return words[length - 1]['words_id']
 
 
 def set_exists(set_id):
@@ -86,7 +86,7 @@ def add_words(set_id, new_words):
 
 
 def delete_words_by_id(set_id, words_id):
-    return db.sets.update_one({'set_id': set_id}, {'$pull': {'words': {'$in': [words_id]}}})
+    return db.sets.update_one({'set_id': set_id}, {'$pull': {'words': {'words_id': words_id}}})
 
 
 def delete_all_words(set_id):

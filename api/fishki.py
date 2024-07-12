@@ -118,7 +118,7 @@ def api_add_words():
         w2 = expect(post_data.get('word_2'), str, 'word_2')
 
         id = last_words_id(set_id) + 1
-        words = [id, w1, w2]
+        words = {'words_id': id, 'word_1': w1, 'word_2': w2}
 
         add_words(set_id, words)
         return jsonify({'message': f'Words added to set {set_id}...'})
@@ -148,7 +148,6 @@ def api_update_words():
 
 @fishki_api_v1.route('/delete_words', methods=['DELETE'])
 def api_delete_words():
-    body_data = request.get_json()
     try:
         set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
