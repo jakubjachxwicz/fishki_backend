@@ -13,4 +13,4 @@ if __name__ == '__main__':
     app.config['MONGO_URI'] = config['TEST']['DB_URI']
     app.register_blueprint(fishki_api_v1)
 
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
