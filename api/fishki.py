@@ -139,7 +139,7 @@ def api_update_words():
         w1 = expect(body_data.get('word_1'), str, 'word_1')
         w2 = expect(body_data.get('word_2'), str, 'word_2')
 
-        update_words(set_id, [words_id, w1, w2])
+        update_words(set_id, {'words_id': words_id, 'word_1': w1, 'word_2': w2})
         return jsonify({'message': 'Words updated...'})
 
     except Exception as e:

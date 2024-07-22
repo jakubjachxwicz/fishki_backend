@@ -94,6 +94,9 @@ def delete_all_words(set_id):
 
 
 def update_words(set_id, new_words):
+    # return db.sets.update_one({'set_id': set_id},
+    #                           {'$set': {'words.$[xxx]': new_words}},
+    #                           array_filters=[{'xxx.0': new_words[0]}])
     return db.sets.update_one({'set_id': set_id},
-                              {'$set': {'words.$[xxx]': new_words}},
-                              array_filters=[{'xxx.0': new_words[0]}])
+                                  {'$set': {'words.$[xxx]': new_words}},
+                                  array_filters=[{'xxx.words_id': new_words['words_id']}])

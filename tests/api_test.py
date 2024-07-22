@@ -32,12 +32,13 @@ BASE = 'http://127.0.0.1:5000/api/v1/fishki'
 # response = requests.patch(BASE + '/update_set?set_id=4', json={'name': 'AAA', 'lang_1': 'bg', 'lang_2': 'pl'})
 
 # words = [('kot', 'cat'), ('dough', 'ciasto'), ('cookie', 'ciastko'), ('swamp', 'bangno')]
-# for pair in words:
-#     print(pair)
-#     requests.post(BASE + '/add_words?set_id=2', json={'word_1': pair[0], 'word_2': pair[1]})
+for i in range(200):
+    requests.post(BASE + '/add_words?set_id=3', json={'word_1': 'elo', 'word_2': 'benc'})
 
 # requests.post(BASE + '/add_words?set_id=2', json={'word_1': 'sand', 'word_2': 'piasek'})
 
-response = requests.delete(BASE + '/delete_words?set_id=2&words_id=1')
+# response = requests.delete(BASE + '/delete_words?set_id=2&words_id=1')
 
-print(response.json())
+# response = requests.patch(BASE + '/update_words?set_id=2&words_id=4', json={'word_1': 'ciasto', 'word_2': 'cake'})
+
+# print(response.json())
