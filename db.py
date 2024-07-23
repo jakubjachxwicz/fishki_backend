@@ -1,6 +1,7 @@
 from flask import g, current_app
 from flask_pymongo import PyMongo
 from werkzeug.local import LocalProxy
+from werkzeug.security import generate_password_hash
 
 
 def get_db():
@@ -64,10 +65,6 @@ def set_exists(set_id):
     return False
 
 
-# def get_all_sets():
-#     return db.sets.find()
-
-
 def create_set(set_id, name, lang_1, lang_2):
     set_doc = {'set_id': set_id, 'name': name, 'lang_1': lang_1, 'lang_2': lang_2, 'words': []}
     return db.sets.insert_one(set_doc)
@@ -94,9 +91,32 @@ def delete_all_words(set_id):
 
 
 def update_words(set_id, new_words):
-    # return db.sets.update_one({'set_id': set_id},
-    #                           {'$set': {'words.$[xxx]': new_words}},
-    #                           array_filters=[{'xxx.0': new_words[0]}])
     return db.sets.update_one({'set_id': set_id},
-                                  {'$set': {'words.$[xxx]': new_words}},
-                                  array_filters=[{'xxx.words_id': new_words['words_id']}])
+                              {'$set': {'words.$[xxx]': new_words}},
+                              array_filters=[{'xxx.words_id': new_words['words_id']}])
+
+
+def count_users():
+    return db.get_collection('users').estimated_document_count()
+
+
+def create_user(username, email, password):
+    users = db.users
+    hashed_password = generate_password_hash(password)
+
+    count = count_users()
+    while list(users.find({'user_id': count})):
+        count += 1
+
+    users.insert_one({
+        'user_id': count,
+        'username': username,
+        'email': email,
+        'password': hashed_password
+    })
+
+    return count # user_id dodanego użytkownika
+
+
+def get_user_by_email(email):
+    return db.users.find_one({'email': email})
