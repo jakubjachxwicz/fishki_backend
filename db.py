@@ -33,13 +33,16 @@ def get_set(set_id):
         return {}
 
 
-def get_all_sets():
+def get_all_sets(user_id):
     result = []
+    # print(user_id)
+    # print(type(user_id))
 
-    cursor = db.sets.find({})
+    cursor = db.sets.find({'user_id': user_id})
     for document in cursor:
         doc = document.copy()
         del doc['_id']
+        del doc['user_id']
         doc['words_count'] = count_words_in_set(document['set_id'])
         del doc['words']
 
@@ -65,8 +68,8 @@ def set_exists(set_id):
     return False
 
 
-def create_set(set_id, name, lang_1, lang_2):
-    set_doc = {'set_id': set_id, 'name': name, 'lang_1': lang_1, 'lang_2': lang_2, 'words': []}
+def create_set(set_id, user_id, name, lang_1, lang_2):
+    set_doc = {'set_id': set_id, 'user_id': user_id, 'name': name, 'lang_1': lang_1, 'lang_2': lang_2, 'words': []}
     return db.sets.insert_one(set_doc)
 
 
@@ -120,3 +123,7 @@ def create_user(username, email, password):
 
 def get_user_by_email(email):
     return db.users.find_one({'email': email})
+
+
+def get_user_id(set_id):
+    return int(db.sets.find_one({'set_id': set_id}).get('user_id'))

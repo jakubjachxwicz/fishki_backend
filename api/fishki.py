@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from db import create_set, add_words, count_sets, set_exists, last_words_id, update_set, \
     get_set, update_words, delete_set_by_id, delete_words_by_id, delete_all_words, \
-    get_all_sets, get_user_by_email, create_user
+    get_all_sets, get_user_by_email, create_user, get_user_id
 from api.auth import token_required, create_token
 from api.utils import expect
 from werkzeug.security import check_password_hash
@@ -10,7 +10,8 @@ fishki_api_v1 = Blueprint('fishki_api_v1', 'fishki_api_v1', url_prefix='/api/v1/
 
 
 @fishki_api_v1.route('/get_set', methods=['GET'])
-def api_get_set():
+@token_required
+def api_get_set(user_id):
     try:
         set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
@@ -19,6 +20,9 @@ def api_get_set():
         res = get_set(set_id)
         del res['_id']
 
+        if res.get('user_id') != int(user_id):
+            return jsonify({'error': 'Invalid credentials'}), 403
+
         return jsonify(res)
 
     except Exception as e:
@@ -26,13 +30,17 @@ def api_get_set():
 
 
 @fishki_api_v1.route('/get_words', methods=['GET'])
-def api_get_words():
+@token_required
+def api_get_words(user_id):
     try:
         set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
 
         res = get_set(set_id)
+
+        if res.get('user_id') != int(user_id):
+            return jsonify({'error': 'Invalid credentials'}), 403
 
         return jsonify(res['words'])
 
@@ -41,13 +49,15 @@ def api_get_words():
 
 
 @fishki_api_v1.route('/get_all_sets', methods=['GET'])
-def api_get_all_sets():
-    result = get_all_sets()
+@token_required
+def api_get_all_sets(user_id):
+    result = get_all_sets(int(user_id))
     return jsonify(result)
 
 
 @fishki_api_v1.route('/create_set', methods=['POST'])
-def api_create_set():
+@token_required
+def api_create_set(user_id):
     post_data = request.get_json()
     try:
         count = count_sets()
@@ -57,21 +67,25 @@ def api_create_set():
         lang_1 = expect(post_data.get('lang_1'), str, 'lang_1')
         lang_2 = expect(post_data.get('lang_2'), str, 'lang_2')
 
-        create_set(count, name, lang_1, lang_2)
-        return jsonify({'message': 'Set added...'}), 200
+        create_set(count, int(user_id), name, lang_1, lang_2)
+        return jsonify({'message': 'Set added...'}), 201
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
 
 @fishki_api_v1.route('/update_set', methods=['PATCH'])
-def api_update_set():
+@token_required
+def api_update_set(user_id):
     body_data = request.get_json()
     try:
         set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
         set_data = get_set(set_id)
+
+        if get_user_id(set_id) != int(user_id):
+            return jsonify({'error': 'Invalid credentials'}), 403
 
         if not body_data.get('name'):
             name = set_data['name']
@@ -96,11 +110,15 @@ def api_update_set():
 
 
 @fishki_api_v1.route('/delete_set', methods=['DELETE'])
-def api_delete_set():
+@token_required
+def api_delete_set(user_id):
     try:
         set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
+
+        if get_user_id(set_id) != int(user_id):
+            return jsonify({'error': 'Invalid credentials'}), 403
 
         delete_set_by_id(set_id)
         return jsonify({'message': 'Set has been deleted...'})
@@ -110,7 +128,8 @@ def api_delete_set():
 
 
 @fishki_api_v1.route('/add_words', methods=['POST'])
-def api_add_words():
+@token_required
+def api_add_words(user_id):
     post_data = request.get_json()
     try:
         set_id = expect(int(request.args.get('set_id')), int, 'set_id')
@@ -119,18 +138,22 @@ def api_add_words():
         w1 = expect(post_data.get('word_1'), str, 'word_1')
         w2 = expect(post_data.get('word_2'), str, 'word_2')
 
+        if get_user_id(set_id) != int(user_id):
+            return jsonify({'error': 'Invalid credentials'}), 403
+
         id = last_words_id(set_id) + 1
         words = {'words_id': id, 'word_1': w1, 'word_2': w2}
 
         add_words(set_id, words)
-        return jsonify({'message': f'Words added to set {set_id}...'})
+        return jsonify({'message': f'Words added to set {set_id}...'}), 201
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
 
 @fishki_api_v1.route('/update_words', methods=['PATCH'])
-def api_update_words():
+@token_required
+def api_update_words(user_id):
     body_data = request.get_json()
     try:
         set_id = expect(int(request.args.get('set_id')), int, 'set_id')
@@ -141,6 +164,9 @@ def api_update_words():
         w1 = expect(body_data.get('word_1'), str, 'word_1')
         w2 = expect(body_data.get('word_2'), str, 'word_2')
 
+        if get_user_id(set_id) != int(user_id):
+            return jsonify({'error': 'Invalid credentials'}), 403
+
         update_words(set_id, {'words_id': words_id, 'word_1': w1, 'word_2': w2})
         return jsonify({'message': 'Words updated...'})
 
@@ -149,12 +175,16 @@ def api_update_words():
 
 
 @fishki_api_v1.route('/delete_words', methods=['DELETE'])
-def api_delete_words():
+@token_required
+def api_delete_words(user_id):
     try:
         set_id = expect(int(request.args.get('set_id')), int, 'set_id')
         if not set_exists(set_id):
             return jsonify({'error': f'Set with id {set_id} doesn\'t exist...'}), 404
         words_id = expect(int(request.args.get('words_id')), int, 'words_id')
+
+        if get_user_id(set_id) != int(user_id):
+            return jsonify({'error': 'Invalid credentials'}), 403
 
         delete_words_by_id(set_id, words_id)
         return jsonify({'message': 'Words deleted...'})
