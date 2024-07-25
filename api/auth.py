@@ -64,27 +64,38 @@ def token_required(f):
 @fishki_api_v1.route('/register', methods=['POST'])
 def register():
     body_data = request.get_json()
+    try:
+        username = expect(body_data.get('username'), str, 'username')
+        password = expect(body_data.get('password'), str, 'password')
+        email_data = expect(body_data.get('email'), str, 'email')
+        validated_email = validate_email(email_data, check_deliverability=False)
 
-    # ZRÓB WALIDACJEEEEEEEEE
-    # z expect() i jakieś walidacje email itp, długosci...
-    if get_user_by_email(body_data.get('email')):
-        return jsonify({'error': 'User already exist'}), 400
+        if get_user_by_email(validated_email.normalized):
+            return jsonify({'error': 'User already exist'}), 400
 
-    user_id = create_user(body_data.get('username'), body_data.get('email'), body_data.get('password'))
-    return jsonify({'message': 'User has been created', 'user_id': user_id}), 201
+        user_id = create_user(username, validated_email.normalized, password)
+        return jsonify({'message': 'User has been created', 'user_id': user_id}), 201
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 
 @fishki_api_v1.route('/login', methods=['POST'])
 def login():
     body_data = request.get_json()
+    try:
+        password = expect(body_data.get('password'), str, 'password')
+        email = expect(body_data.get('email'), str, 'email')
+        user = get_user_by_email(email)
 
-    #TU TEZ WALIDACJA JAK WYZEJ EJST DO ZROBIENIA
-    user = get_user_by_email(body_data.get('email'))
-    if user and check_password_hash(user['password'], body_data.get('password')):
-        token = create_token(user)
-        return jsonify({'message': 'Login successful', 'token': token}), 200
+        if user and check_password_hash(user['password'], password):
+            token = create_token(user)
+            return jsonify({'message': 'Login successful', 'token': token}), 200
 
-    return jsonify({'error': 'Invalid credentials'}), 401
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 
 @fishki_api_v1.route('/verify_token', methods=['GET'])
