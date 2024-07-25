@@ -127,3 +127,28 @@ def get_user_by_email(email):
 
 def get_user_id(set_id):
     return int(db.sets.find_one({'set_id': set_id}).get('user_id'))
+
+
+def update_username(user_id, username):
+    return db.users.update_one({'user_id': user_id}, {'$set': {'username': username}})
+
+
+def update_email(user_id, email):
+    return db.users.update_one({'user_id': user_id}, {'$set': {'email': email}})
+
+
+def update_password(user_id, password):
+    hashed_password = generate_password_hash(password)
+    return db.users.update_one({'user_id': user_id}, {'$set': {'password': hashed_password}})
+
+
+def get_user_by_id(user_id):
+    return db.users.find_one({'user_id': user_id})
+
+
+def delete_all_sets(user_id):
+    return db.sets.delete_many({'user_id': user_id})
+
+
+def delete_user(user_id):
+    return db.users.delete_one({'user_id': user_id})

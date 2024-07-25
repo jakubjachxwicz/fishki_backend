@@ -1,12 +1,10 @@
-from flask import Blueprint, request, jsonify
+from flask import request, jsonify
 from db import create_set, add_words, count_sets, set_exists, last_words_id, update_set, \
     get_set, update_words, delete_set_by_id, delete_words_by_id, delete_all_words, \
-    get_all_sets, get_user_by_email, create_user, get_user_id
-from api.auth import token_required, create_token
+    get_all_sets, get_user_id
+from api.auth import token_required
 from api.utils import expect
-from werkzeug.security import check_password_hash
-
-fishki_api_v1 = Blueprint('fishki_api_v1', 'fishki_api_v1', url_prefix='/api/v1/fishki')
+from api.blueprint import fishki_api_v1
 
 
 @fishki_api_v1.route('/get_set', methods=['GET'])
@@ -206,36 +204,3 @@ def api_delete_all_words():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
-
-@fishki_api_v1.route('/register', methods=['POST'])
-def register():
-    body_data = request.get_json()
-
-    # ZRÓB WALIDACJEEEEEEEEE
-    # z expect() i jakieś walidacje email itp, długosci...
-    if get_user_by_email(body_data.get('email')):
-        return jsonify({'error': 'User already exist'}), 400
-
-    user_id = create_user(body_data.get('username'), body_data.get('email'), body_data.get('password'))
-    return jsonify({'message': 'User has been created', 'user_id': user_id}), 201
-
-
-@fishki_api_v1.route('/login', methods=['POST'])
-def login():
-    body_data = request.get_json()
-
-    #TU TEZ WALIDACJA JAK WYZEJ EJST DO ZROBIENIA
-    user = get_user_by_email(body_data.get('email'))
-    if user and check_password_hash(user['password'], body_data.get('password')):
-        token = create_token(user)
-        return jsonify({'message': 'Login successful', 'token': token}), 200
-
-    return jsonify({'error': 'Invalid credentials'}), 401
-
-
-@fishki_api_v1.route('/verify_token', methods=['GET'])
-@token_required
-def verify_token(user_id):
-    # print(user_id)
-    return jsonify({'message': 'Token is valid'}), 200
