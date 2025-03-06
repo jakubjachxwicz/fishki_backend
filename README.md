@@ -25,9 +25,3 @@ Autoryzacja użytkowników obsługiwana jest przy użyciu <b>JSON Web Token</b>.
 
 Technologie wykorzystane w projekcie:
 <br><i>Python, Flask, MongoDB, JSON Web Token</i>
-
-<br>
-
-![User data stored in MongoDB](screenshots/users.png)
-<br>
-![Flashcards data stored in MongoDB](screenshots/words.png)
